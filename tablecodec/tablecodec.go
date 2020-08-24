@@ -38,8 +38,8 @@ var (
 
 const (
 	idLen     = 8
-	prefixLen = 1 + idLen /*tableID*/ + 2
-	// RecordRowKeyLen is public for calculating avgerage row size.
+	prefixLen = tablePrefixLength + idLen /*tableID*/ + recordPrefixSepLength
+	// RecordRowKeyLen is public for calculating average row size.
 	RecordRowKeyLen       = prefixLen + idLen /*handle*/
 	tablePrefixLength     = 1
 	recordPrefixSepLength = 2
@@ -71,7 +71,11 @@ func EncodeRowKeyWithHandle(tableID int64, handle int64) kv.Key {
 
 // DecodeRecordKey decodes the key and gets the tableID, handle.
 func DecodeRecordKey(key kv.Key) (tableID int64, handle int64, err error) {
-	/* Your code here */
+	if len(key) != RecordRowKeyLen {
+		return 0, 0, errInvalidRecordKey.GenWithStack("invalid record key - %q", key)
+	}
+	next, tableID, err := codec.DecodeInt(key[tablePrefixLength:])
+	_, handle, err = codec.DecodeInt(next[recordPrefixSepLength:])
 	return
 }
 
@@ -94,8 +98,12 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 
 // DecodeIndexKeyPrefix decodes the key and gets the tableID, indexID, indexValues.
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
-	/* Your code here */
-	return tableID, indexID, indexValues, nil
+	if len(key) < prefixLen+idLen {
+		return 0, 0, nil, errInvalidIndexKey.GenWithStack("invalid index key - %q", key)
+	}
+	next, tableID, err := codec.DecodeInt(key[tablePrefixLength:])
+	indexValues, indexID, err = codec.DecodeInt(next[recordPrefixSepLength:])
+	return
 }
 
 // DecodeIndexKey decodes the key and gets the tableID, indexID, indexValues.

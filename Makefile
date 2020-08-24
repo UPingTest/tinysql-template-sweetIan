@@ -80,7 +80,7 @@ goword:tools/bin/goword
 gosec:tools/bin/gosec
 	tools/bin/gosec $$($(PACKAGE_DIRECTORIES))
 
-check-static: tools/bin/golangci-lint
+check-static:tools/bin/golangci-lint
 	tools/bin/golangci-lint run -v --disable-all --deadline=4m \
 	  --enable=misspell \
 	  --enable=ineffassign \
@@ -255,7 +255,7 @@ tools/bin/ineffassign:tools/check/go.mod
 	cd tools/check; \
 	$(GO) build -o ../bin/ineffassign github.com/gordonklaus/ineffassign
 tools/bin/golangci-lint:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b ./tools/bin v1.21.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./tools/bin v1.30.0
 
 # Usage:
 #
